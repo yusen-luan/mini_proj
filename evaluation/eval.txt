@@ -1,0 +1,34 @@
+================================================================================
+EVALUATION RESULTS
+================================================================================
+Sequence Accuracy (Exact Match): 11.85%
+Character Accuracy:               52.28%
+Character-level Precision:        55.31%
+Character-level Recall:           52.28%
+Character-level F1 Score:         53.18%
+================================================================================
+
+================================================================================
+Sample Predictions (Random):
+================================================================================
+✗ True: 0qtjdlvt             | Pred: out1iwt
+✓ True: 3ido1q0              | Pred: 3ido1q0
+✗ True: 5541y                | Pred: ss41m
+✗ True: 57mwra               | Pred: s7mwna
+✗ True: 63zdn                | Pred: b32w
+✗ True: 64alz                | Pred: b4al
+✗ True: 8ilfoyvf             | Pred: q4gv89w8
+✗ True: apf9kx               | Pred: xyxymr
+✓ True: euup                 | Pred: euup
+✗ True: gyhk2kgp             | Pred: eyhk2aep
+✗ True: kenmc                | Pred: xemmmc
+✗ True: kvop4si              | Pred: wxap4ai
+✗ True: n9t72                | Pred: w
+✗ True: oa6pl1g              | Pred: oa6pl16
+✗ True: oeol                 | Pred: qe01
+✗ True: qn8yyv6              | Pred: qn8yhv6
+✗ True: r00pd                | Pred: mwwv4
+✓ True: raza3a               | Pred: raza3a
+✗ True: tpktuk6              | Pred: tpkc4kb
+✗ True: xxmao                | Pred: msao
+================================================================================
