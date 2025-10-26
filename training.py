@@ -9,7 +9,7 @@ from CTCModel import build_ctc_model
 IMAGE_HEIGHT = 50
 IMAGE_WIDTH = 200
 BATCH_SIZE = 16
-NUM_EPOCHS = 20
+NUM_EPOCHS = 100
 
 
 def preprocess_image(image_path):
@@ -134,7 +134,7 @@ def train_model(train_dataset, validation_dataset, num_characters, model_save_pa
     callbacks = [
         tf.keras.callbacks.EarlyStopping(
             monitor='loss',
-            patience=5,
+            patience=10,
             verbose=1,
             restore_best_weights=True
         ),
