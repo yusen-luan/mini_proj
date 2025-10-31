@@ -1,22 +1,23 @@
 import numpy as np
 from pathlib import Path
 import tensorflow as tf
-from tensorflow.keras.optimizers import Adam
 from CTCModel import build_ctc_model
+import matplotlib.pyplot as plt
 
 
 # Define constants
-IMAGE_HEIGHT = 50
-IMAGE_WIDTH = 200
+IMAGE_HEIGHT = 80
+IMAGE_WIDTH = 750
 BATCH_SIZE = 16
-NUM_EPOCHS = 100
+NUM_EPOCHS = 500
 
 
 def preprocess_image(image_path):
-    """Preprocess an image by reading, decoding, and resizing."""
+    """Preprocess an image by reading, decoding, and resizing with padding."""
     image = tf.io.read_file(image_path)
     image = tf.image.decode_png(image, channels=1)  # Grayscale image
-    image = tf.image.resize(image, (IMAGE_HEIGHT, IMAGE_WIDTH))
+    # Use resize_with_pad to maintain aspect ratio and add padding as needed
+    image = tf.image.resize_with_pad(image, IMAGE_HEIGHT, IMAGE_WIDTH)
     return image
 
 
@@ -110,6 +111,37 @@ def load_and_preprocess_data(train_dir, test_dir):
     return train_dataset, validation_dataset, test_dataset, char_to_int, int_to_char, max_length
 
 
+def plot_training_history(history, save_path="./evaluation/training_loss_plot.png"):
+    """
+    Plot training and validation loss over epochs and save the figure.
+    
+    Args:
+        history: Training history object from model.fit()
+        save_path (str): Path to save the plot
+    """
+    plt.figure(figsize=(10, 6))
+    
+    # Plot training loss
+    plt.plot(history.history['loss'], label='Training Loss', linewidth=2)
+    
+    # Plot validation loss if available
+    if 'val_loss' in history.history:
+        plt.plot(history.history['val_loss'], label='Validation Loss', linewidth=2)
+    
+    plt.xlabel('Epoch', fontsize=12)
+    plt.ylabel('Loss', fontsize=12)
+    plt.title('Training and Validation Loss over Epochs', fontsize=14, fontweight='bold')
+    plt.legend(fontsize=11)
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    
+    # Save the plot
+    Path(save_path).parent.mkdir(parents=True, exist_ok=True)
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    print(f"Training loss plot saved to {save_path}")
+    plt.close()
+
+
 def train_model(train_dataset, validation_dataset, num_characters, model_save_path="./model/ctc_model.keras"):
     """
     Train the CTC model and save it.
@@ -127,13 +159,13 @@ def train_model(train_dataset, validation_dataset, num_characters, model_save_pa
     model = build_ctc_model(IMAGE_HEIGHT, IMAGE_WIDTH, num_characters)
     
     # Compile the model
-    model.compile(optimizer=Adam())
+    model.compile(optimizer=tf.keras.optimizers.Adam())
     model.summary()
     
     # Define callbacks
     callbacks = [
         tf.keras.callbacks.EarlyStopping(
-            monitor='loss',
+            monitor='val_loss',
             patience=10,
             verbose=1,
             restore_best_weights=True
@@ -154,6 +186,9 @@ def train_model(train_dataset, validation_dataset, num_characters, model_save_pa
     Path(model_save_path).parent.mkdir(parents=True, exist_ok=True)
     model.save(model_save_path)
     print("Model saved successfully!")
+    
+    # Plot and save training history
+    plot_training_history(history)
     
     return model, history
 

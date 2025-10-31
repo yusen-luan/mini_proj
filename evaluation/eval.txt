@@ -1,5 +1,5 @@
 ================================================================================
-EVALUATION RESULTS
+EVALUATION RESULTS (20 epochs)
 ================================================================================
 Sequence Accuracy (Exact Match): 11.85%
 Character Accuracy:               52.28%
@@ -31,4 +31,74 @@ Sample Predictions (Random):
 ✓ True: raza3a               | Pred: raza3a
 ✗ True: tpktuk6              | Pred: tpkc4kb
 ✗ True: xxmao                | Pred: msao
+================================================================================
+
+================================================================================
+EVALUATION RESULTS (100 epochs)
+================================================================================
+Sequence Accuracy (Exact Match): 17.70%
+Character Accuracy:               57.71%
+Character-level Precision:        60.99%
+Character-level Recall:           57.71%
+Character-level F1 Score:         58.84%
+================================================================================
+
+================================================================================
+Sample Predictions (Random):
+================================================================================
+✗ True: 0n5546               | Pred: on5546
+✗ True: 2cteaog              | Pred: 2cze2ag
+✗ True: 4orw5                | Pred: q0lw5
+✗ True: 5hquho               | Pred: 0hq0ho
+✓ True: 5rrvmra              | Pred: 5rrvmra
+✓ True: 6umph5p0             | Pred: 6umph5p0
+✗ True: 7q0s9                | Pred: 7qus9
+✗ True: agti                 | Pred: xxxx
+✗ True: axiy                 | Pred: pxy
+✗ True: botts4p              | Pred: bott54p
+✓ True: d4ls                 | Pred: d4ls
+✓ True: gwbjep               | Pred: gwbjep
+✗ True: imr5u172             | Pred: 1mp5u172
+✗ True: io8w8                | Pred: 1q8w8
+✗ True: kirtl                | Pred: krt1
+✗ True: nle3tm               | Pred: c0ofr
+✗ True: ozv10                | Pred: ozv
+✗ True: u4j8el8              | Pred: yu418218
+✗ True: uby5m2a              | Pred: ueyer2f
+✗ True: x6g6ybr              | Pred: x6g6y8r
+================================================================================
+
+================================================================================
+EVALUATION RESULTS (larger hyperparams, trained under kaggle)
+================================================================================
+Sequence Accuracy (Exact Match): 37.10%
+Character Accuracy:               74.77%
+Character-level Precision:        75.98%
+Character-level Recall:           74.77%
+Character-level F1 Score:         75.23%
+================================================================================
+
+================================================================================
+Sample Predictions (Random):
+================================================================================
+✗ True: 0tbe                 | Pred: ocbe
+✓ True: 39uww47              | Pred: 39uww47
+✗ True: 3smh1i               | Pred: 9smhli
+✓ True: 3w4cxb4              | Pred: 3w4cxb4
+✗ True: 4w2d1                | Pred: 4xzd1
+✗ True: 8t5ylkn              | Pred: 8toylkn
+✗ True: f95n2fh              | Pred: f9sn2fh
+✗ True: g1sj8c               | Pred: g1cj8c
+✗ True: guvl                 | Pred: guyl
+✓ True: hrdksy8              | Pred: hrdksy8
+✗ True: hy8d                 | Pred: hyed
+✗ True: ioyvyf86             | Pred: i0yuvf86
+✗ True: kko5271y             | Pred: kk05271y
+✗ True: nyrp9e               | Pred: yyap96
+✗ True: oy02dd               | Pred: 6y02dd
+✗ True: q4oqzm               | Pred: q4dq1m
+✗ True: r5wz7                | Pred: r5w27
+✗ True: t7zyxx               | Pred: t72yxx
+✗ True: yjhmfa               | Pred: yjhmfp
+✗ True: zp29                 | Pred: 2p29
 ================================================================================
