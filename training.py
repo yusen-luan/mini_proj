@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 IMAGE_HEIGHT = 80
 IMAGE_WIDTH = 750
 BATCH_SIZE = 16
-NUM_EPOCHS = 500
+NUM_EPOCHS = 100
 
 
 def preprocess_image(image_path):
@@ -25,6 +25,33 @@ def pad_label(label, max_length, padding_value=0):
     """Pad label with padding_value to reach max_length."""
     padded = label + [padding_value] * (max_length - len(label))
     return padded
+
+
+def augment_image(image):
+    """
+    Apply random augmentations to training images on-the-fly.
+    Called during training for each image in each epoch.
+    
+    Args:
+        image: TensorFlow tensor of shape (height, width, 1)
+        
+    Returns:
+        Augmented image tensor
+    """
+    # Random brightness adjustment (helps with varying captcha backgrounds)
+    image = tf.image.random_brightness(image, max_delta=0.2)
+    
+    # Random contrast adjustment (helps with varying text clarity)
+    image = tf.image.random_contrast(image, lower=0.8, upper=1.2)
+    
+    # Add Gaussian noise (helps model generalize to noisy captchas)
+    noise = tf.random.normal(shape=tf.shape(image), mean=0.0, stddev=3.0)
+    image = image + noise
+    
+    # Clip values to valid range [0, 255]
+    image = tf.clip_by_value(image, 0., 255.)
+    
+    return image
 
 
 def load_and_preprocess_data(train_dir, test_dir):
@@ -96,8 +123,20 @@ def load_and_preprocess_data(train_dir, test_dir):
     
     # Split training data into train and validation (80/20 split)
     train_size = int(0.8 * len(train_image_paths))
-    train_dataset = train_dataset_full.take(train_size).batch(BATCH_SIZE).prefetch(buffer_size=tf.data.AUTOTUNE)
-    validation_dataset = train_dataset_full.skip(train_size).batch(BATCH_SIZE).prefetch(buffer_size=tf.data.AUTOTUNE)
+    train_dataset = train_dataset_full.take(train_size)
+    validation_dataset = train_dataset_full.skip(train_size)
+    
+    # Apply augmentation ONLY to training set (not validation)
+    # This happens on-the-fly during training - each epoch gets different augmentations
+    print("Applying on-the-fly data augmentation to training set...")
+    train_dataset = train_dataset.map(
+        lambda img, lbl, lbl_len: (augment_image(img), lbl, lbl_len),
+        num_parallel_calls=tf.data.AUTOTUNE
+    )
+    
+    # Batch and prefetch for both datasets
+    train_dataset = train_dataset.batch(BATCH_SIZE).prefetch(buffer_size=tf.data.AUTOTUNE)
+    validation_dataset = validation_dataset.batch(BATCH_SIZE).prefetch(buffer_size=tf.data.AUTOTUNE)
     
     # Create test dataset (for final evaluation)
     test_dataset = tf.data.Dataset.from_tensor_slices((test_images, test_encoded_labels_padded, test_label_lengths))
@@ -164,9 +203,16 @@ def train_model(train_dataset, validation_dataset, num_characters, model_save_pa
     
     # Define callbacks
     callbacks = [
+        tf.keras.callbacks.ReduceLROnPlateau(
+            monitor='val_loss',
+            factor=0.5,
+            patience=5,
+            min_lr=1e-7,
+            verbose=1
+        ),
         tf.keras.callbacks.EarlyStopping(
             monitor='val_loss',
-            patience=10,
+            patience=20,  # Increased patience for better convergence
             verbose=1,
             restore_best_weights=True
         ),

@@ -105,25 +105,26 @@ def build_ctc_model(image_height, image_width, num_characters):
                output_shape=(image_width, image_height, 1),
                name="transpose")(x)
     
-    # Convolutional layers
-    x = Conv2D(64, (3, 3), activation="relu", kernel_initializer=tf.keras.initializers.he_normal(), padding="same")(x)
+    # Convolutional layers (increased capacity)
+    x = Conv2D(128, (3, 3), activation="relu", kernel_initializer=tf.keras.initializers.he_normal(), padding="same")(x)
     x = BatchNormalization()(x)
     x = MaxPooling2D((2, 2), name="pool1")(x)
     
-    x = Conv2D(128, (3, 3), activation="relu", kernel_initializer=tf.keras.initializers.he_normal(), padding="same")(x)
+    x = Conv2D(256, (3, 3), activation="relu", kernel_initializer=tf.keras.initializers.he_normal(), padding="same")(x)
     x = BatchNormalization()(x)
     x = MaxPooling2D((2, 2), name="pool2")(x)
     
-    x = Conv2D(256, (3, 3), activation="relu", kernel_initializer=tf.keras.initializers.he_normal(), padding="same")(x)
+    x = Conv2D(512, (3, 3), activation="relu", kernel_initializer=tf.keras.initializers.he_normal(), padding="same")(x)
     x = BatchNormalization()(x)
     x = MaxPooling2D((2, 1), name="pool3")(x)  # Pooling over time dimension
     
-    x = Reshape(target_shape=(image_width // 8, (image_height // 4) * 256), name="reshape")(x)
-    x = Dense(128, activation="relu", kernel_initializer=tf.keras.initializers.he_normal())(x)
+    x = Reshape(target_shape=(image_width // 8, (image_height // 4) * 512), name="reshape")(x)
+    x = Dense(256, activation="relu", kernel_initializer=tf.keras.initializers.he_normal())(x)
     x = Dropout(0.2)(x)
     
-    # Recurrent layers (Bidirectional LSTM)
-    x = Bidirectional(LSTM(128, return_sequences=True, dropout=0.25))(x)
+    # Recurrent layers (Bidirectional LSTM) - increased capacity with 2 layers
+    x = Bidirectional(LSTM(256, return_sequences=True, dropout=0.25))(x)
+    x = Bidirectional(LSTM(256, return_sequences=True, dropout=0.25))(x)
     
     # Output layer (CTC)
     # Add 1 for the CTC blank label
