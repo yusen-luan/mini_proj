@@ -4,3 +4,4 @@
 # Ignore Python cache
 __pycache__/
 
+/model/
