@@ -4,8 +4,76 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.backend import ctc_decode
 from sklearn.metrics import precision_score, recall_score, f1_score
-from training import load_and_preprocess_data, IMAGE_WIDTH, IMAGE_HEIGHT
+from training import load_and_preprocess_data, IMAGE_WIDTH, IMAGE_HEIGHT, extract_label_from_filename
 from CTCModel import build_ctc_model
+import cv2
+
+
+def denoise(image, threshold=50, kernel_size=3):
+    """
+    Apply median filtering only to black pixels (low intensity).
+    
+    Args:
+        image: Input image (BGR format)
+        threshold: Pixel intensity threshold for considering pixels as "black"
+        kernel_size: Size of median filter kernel
+        
+    Returns:
+        Denoised image
+    """
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    black_mask = gray < threshold
+    median_filtered = cv2.medianBlur(image, kernel_size)
+    result = image.copy()
+    result[black_mask] = median_filtered[black_mask]
+    return result
+
+
+def preprocess_image_advanced(img_path):
+    """
+    Advanced preprocessing: denoise, enhance, sharpen, and binarize.
+    This follows the preprocessing pipeline from the Preprocessing.ipynb notebook.
+    
+    Args:
+        img_path: Path to image file
+        
+    Returns:
+        Binarized image (grayscale, single channel)
+    """
+    img = cv2.imread(str(img_path))
+    if img is None:
+        print(f"Could not read {img_path}")
+        return None
+
+    # Step 1: Denoise - apply median filtering to black pixels
+    denoised_img = denoise(img, threshold=50, kernel_size=3)
+
+    # Step 2: Increase saturation and brightness
+    hsv = cv2.cvtColor(denoised_img, cv2.COLOR_BGR2HSV).astype(np.float32)
+    h, s, v = cv2.split(hsv)
+    s = np.clip(s * 1.8, 0, 255)
+    v = np.clip(v * 1.3, 0, 255)
+    enhanced_hsv = cv2.merge([h, s, v]).astype(np.uint8)
+    enhanced_color = cv2.cvtColor(enhanced_hsv, cv2.COLOR_HSV2BGR)
+
+    # Step 3: Add contrast using CLAHE
+    gray = cv2.cvtColor(enhanced_color, cv2.COLOR_BGR2GRAY)
+    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+    contrast = clahe.apply(gray)
+
+    # Step 4: Sharpen
+    kernel_sharpen = np.array([[0, -1, 0],
+                               [-1, 5, -1],
+                               [0, -1, 0]])
+    sharpened = cv2.filter2D(contrast, -1, kernel_sharpen)
+
+    # Step 5: Binarize using adaptive thresholding
+    binary = cv2.adaptiveThreshold(sharpened, 255,
+                                   cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                   cv2.THRESH_BINARY_INV,
+                                   11, 2)
+    
+    return binary
 
 
 def decode_predictions(predictions, int_to_char, max_length):
@@ -206,7 +274,7 @@ def display_sample_predictions(predictions, labels, num_samples=10):
 def main():
     """Main evaluation function."""
     # Configuration
-    model_path = "./model/ctc_model.keras"
+    model_path = "./model/checkpoints/best_model.keras"
     train_dir = "./data/relabelled"
     test_dir = "./data/test"
     
@@ -216,17 +284,50 @@ def main():
         print("Please train the model first using training.py")
         return
     
-    # Load and preprocess data
-    print("Loading test data...")
-    _, _, test_dataset, char_to_int, int_to_char, max_length = load_and_preprocess_data(
+    # Load training data to get character mappings
+    print("Loading character mappings from training data...")
+    _, _, _, char_to_int, int_to_char, max_length = load_and_preprocess_data(
         train_dir, test_dir
     )
     
-    # Load original test labels for comparison
-    # Remove "-0" suffix from labels (filenames are like "label-0.png")
+    # Load and preprocess test data with advanced preprocessing
+    print("Loading and preprocessing test data with denoising and binarization...")
     test_dir_path = Path(test_dir)
-    test_labels = [image.stem.rsplit('-', 1)[0] if image.stem.endswith('-0') else image.stem 
-                   for image in sorted(test_dir_path.glob("*.png"))]
+    test_image_paths = sorted(test_dir_path.glob("*.png"))
+    
+    # Load original test labels
+    test_labels = [extract_label_from_filename(image.stem) for image in test_image_paths]
+    
+    # Apply advanced preprocessing to test images
+    print("Applying advanced preprocessing (denoise, enhance, sharpen, binarize)...")
+    test_images = []
+    for img_path in test_image_paths:
+        binary_img = preprocess_image_advanced(img_path)
+        if binary_img is not None:
+            # Convert to tensor and resize to expected dimensions
+            # Add channel dimension (grayscale)
+            binary_img = np.expand_dims(binary_img, axis=-1)
+            # Resize with padding to match expected dimensions
+            binary_img_tensor = tf.image.resize_with_pad(
+                binary_img, IMAGE_HEIGHT, IMAGE_WIDTH
+            )
+            test_images.append(binary_img_tensor)
+    
+    # Encode test labels
+    test_encoded_labels = [[char_to_int[char] for char in label.lower()] for label in test_labels]
+    test_label_lengths = [len(label) for label in test_encoded_labels]
+    
+    # Pad labels to max_length
+    def pad_label(label, max_length, padding_value=0):
+        return label + [padding_value] * (max_length - len(label))
+    
+    test_encoded_labels_padded = [pad_label(label, max_length) for label in test_encoded_labels]
+    
+    # Create test dataset
+    test_dataset = tf.data.Dataset.from_tensor_slices((test_images, test_encoded_labels_padded, test_label_lengths))
+    test_dataset = test_dataset.batch(16).prefetch(buffer_size=tf.data.AUTOTUNE)
+    
+    print(f"Preprocessed {len(test_images)} test images")
     
     # Get number of characters for model building
     num_characters = len(char_to_int)

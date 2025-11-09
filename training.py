@@ -3,6 +3,7 @@ from pathlib import Path
 import tensorflow as tf
 from CTCModel import build_ctc_model
 import matplotlib.pyplot as plt
+import re
 
 
 # Define constants
@@ -10,6 +11,26 @@ IMAGE_HEIGHT = 80
 IMAGE_WIDTH = 750
 BATCH_SIZE = 16
 NUM_EPOCHS = 100
+
+
+def extract_label_from_filename(filename_stem):
+    """
+    Extract label from filename by removing everything after the last hyphen.
+    Since '-' is not a valid character (only A-Z, a-z, 0-9 are valid),
+    we can safely remove the suffix after it.
+    
+    Args:
+        filename_stem: Filename without extension (e.g., "ABC123-0" or "ABC123-1")
+        
+    Returns:
+        str: Extracted label (e.g., "ABC123")
+    """
+    # Split on the last hyphen and take everything before it
+    if '-' in filename_stem:
+        return filename_stem.rsplit('-', 1)[0]
+    else:
+        # No hyphen found, return as-is
+        return filename_stem
 
 
 def preprocess_image(image_path):
@@ -116,18 +137,33 @@ def load_and_preprocess_data(train_dir, test_dir):
     
     # Load training data
     train_image_paths = [str(image) for image in sorted(train_dir.glob("*.png"))]
-    # Remove "-0" suffix from labels (filenames are like "label-0.png")
-    train_labels = [image.stem.rsplit('-', 1)[0] if image.stem.endswith('-0') else image.stem 
-                    for image in sorted(train_dir.glob("*.png"))]
+    # Remove "-<digit(s)>" suffix from labels (filenames are like "label-0.png", "label-1.png", etc.)
+    train_labels = [extract_label_from_filename(image.stem) for image in sorted(train_dir.glob("*.png"))]
     
     # Load test data
     test_image_paths = [str(image) for image in sorted(test_dir.glob("*.png"))]
-    # Remove "-0" suffix from labels (filenames are like "label-0.png")
-    test_labels = [image.stem.rsplit('-', 1)[0] if image.stem.endswith('-0') else image.stem 
-                   for image in sorted(test_dir.glob("*.png"))]
+    # Remove "-<digit(s)>" suffix from labels (filenames are like "label-0.png", "label-1.png", etc.)
+    test_labels = [extract_label_from_filename(image.stem) for image in sorted(test_dir.glob("*.png"))]
     
     print(f"Training samples: {len(train_image_paths)}")
     print(f"Test samples: {len(test_image_paths)}")
+    
+    # Validate that labels only contain alphanumeric characters (A-Z, a-z, 0-9)
+    print("\nValidating labels...")
+    invalid_labels = []
+    for label in train_labels + test_labels:
+        if not re.match(r'^[A-Za-z0-9]+$', label):
+            invalid_labels.append(label)
+    
+    if invalid_labels:
+        print(f"WARNING: Found {len(invalid_labels)} labels with invalid characters (non-alphanumeric):")
+        for label in set(invalid_labels)[:10]:  # Show up to 10 unique invalid labels
+            print(f"  - '{label}'")
+        if len(set(invalid_labels)) > 10:
+            print(f"  ... and {len(set(invalid_labels)) - 10} more unique invalid labels")
+        print("Labels should only contain: A-Z, a-z, 0-9")
+    else:
+        print("All labels are valid (alphanumeric only)")
     
     # Combine all labels to find all unique characters and max length
     all_labels = train_labels + test_labels
