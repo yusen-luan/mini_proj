@@ -242,3 +242,84 @@ Sample Predictions (Random):
 ✓ True: wkrp0ds              | Pred: wkrp0ds
 ✓ True: wnhjh                | Pred: wnhjh
 ================================================================================
+
+================================================================================
+EVALUATION RESULTS (Deep)
+================================================================================
+Sequence Accuracy (Exact Match): 47.15%
+Character Accuracy:               80.59%
+Character-level Precision:        81.83%
+Character-level Recall:           80.59%
+Character-level F1 Score:         81.17%
+================================================================================
+
+================================================================================
+Sample Predictions (Random):
+================================================================================
+✗ True: 0rw4sjk              | Pred: orw4sjk
+✗ True: 13xy                 | Pred: i3xy
+✗ True: 2njlt4               | Pred: 2nj1x4
+✓ True: 5qktumj              | Pred: 5qktumj
+✗ True: 13xy                 | Pred: i3xy
+✗ True: 2njlt4               | Pred: 2nj1x4
+✓ True: 5qktumj              | Pred: 5qktumj
+✗ True: 2njlt4               | Pred: 2nj1x4
+✓ True: 5qktumj              | Pred: 5qktumj
+✓ True: 5qktumj              | Pred: 5qktumj
+✗ True: 6e8ky5vl             | Pred: 6e8ky5uj
+✓ True: a4eer5               | Pred: a4eer5
+✓ True: a4eer5               | Pred: a4eer5
+✗ True: af5tfh               | Pred: af5teh
+✗ True: af5tfh               | Pred: af5teh
+✓ True: exz3r1y4             | Pred: exz3r1y4
+✓ True: exz3r1y4             | Pred: exz3r1y4
+✓ True: hnns4                | Pred: hnns4
+✓ True: hnns4                | Pred: hnns4
+✓ True: ilq9a                | Pred: ilq9a
+✓ True: ilq9a                | Pred: ilq9a
+✓ True: mh9y                 | Pred: mh9y
+✗ True: rtxicbh              | Pred: 27xicbr
+✗ True: v9edw                | Pred: vqeah
+✓ True: vgzy                 | Pred: vgzy
+✗ True: w2s9                 | Pred: w259
+✓ True: xgyfaku              | Pred: xgyfaku
+✗ True: xupyep0m             | Pred: xi3yir0a
+✗ True: yyqt6                | Pred: vyqt6
+✓ True: z599xbz              | Pred: z599xbz
+✗ True: z6r0                 | Pred: z6ro
+================================================================================
+
+================================================================================
+EVALUATION RESULTS (with stretch)
+================================================================================
+Sequence Accuracy (Exact Match): 47.00%
+Character Accuracy:               82.00%
+Character-level Precision:        82.71%
+Character-level Recall:           82.00%
+Character-level F1 Score:         82.31%
+================================================================================
+
+================================================================================
+Sample Predictions (Random):
+================================================================================
+✗ True: 0chnm34              | Pred: pcmm34
+✓ True: 4hycg                | Pred: 4hycg
+✓ True: 4ina3nwq             | Pred: 4ina3nwq
+✓ True: 69a27m               | Pred: 69a27m
+✗ True: f49sgark             | Pred: fh9sgark
+✓ True: gqbmo                | Pred: gqbmo
+✓ True: hcwgu                | Pred: hcwgu
+✓ True: n3vat                | Pred: n3vat
+✗ True: nlha0                | Pred: nlhao
+✗ True: ot7jays9             | Pred: 04uass9
+✗ True: r1zkc                | Pred: rizkc
+✓ True: rubx10               | Pred: rubx10
+✓ True: s4o5wq               | Pred: s4o5wq
+✓ True: tdzde                | Pred: tdzde
+✓ True: ttch14bl             | Pred: ttch14bl
+✗ True: vqf8                 | Pred: vqe8
+✗ True: w62rj61a             | Pred: w67ri6la
+✓ True: wvefdi               | Pred: wvefdi
+✗ True: xxboh2p              | Pred: xhb0n2p
+✓ True: zxqlq                | Pred: zxqlq
+================================================================================

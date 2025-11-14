@@ -274,7 +274,7 @@ def display_sample_predictions(predictions, labels, num_samples=10):
 def main():
     """Main evaluation function."""
     # Configuration
-    model_path = "./model/checkpoints/best_model.keras"
+    model_path = "./model/ctc_model.keras"
     train_dir = "./data/relabelled"
     test_dir = "./data/test"
     

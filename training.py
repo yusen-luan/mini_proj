@@ -83,29 +83,17 @@ def augment_image(image):
         target_width=tf.cast(width, tf.int32)
     )
     
-    # Very small random translation (±2% instead of ±5%) to avoid cutting off edge characters
-    # This is conservative but still provides position variation
-    max_shift_x = tf.cast(width * 0.02, tf.int32)
-    shift_x = tf.random.uniform([], -max_shift_x, max_shift_x, dtype=tf.int32)
+    # Horizontal stretch/squeeze - randomly scale width between 2/3 and 3/2
+    # This simulates varying character spacing and width variations
+    horizontal_scale = tf.random.uniform([], 2.0/3.0, 3.0/2.0)
+    stretched_width = tf.cast(width * horizontal_scale, tf.int32)
     
-    max_shift_y = tf.cast(height * 0.02, tf.int32)
-    shift_y = tf.random.uniform([], -max_shift_y, max_shift_y, dtype=tf.int32)
+    # Resize to stretched width (keep height same)
+    image = tf.image.resize(image, [tf.cast(height, tf.int32), stretched_width])
     
-    # Apply translation with sufficient padding to ensure no content loss
-    padded_height = tf.cast(height, tf.int32) + tf.abs(max_shift_y) * 2
-    padded_width = tf.cast(width, tf.int32) + tf.abs(max_shift_x) * 2
-    
-    # Pad with white (255) - typical captcha background
-    image = tf.image.resize_with_crop_or_pad(image, padded_height, padded_width)
-    
-    # Translate by cropping at offset (content is preserved in padding)
-    offset_y = tf.abs(max_shift_y) - shift_y
-    offset_x = tf.abs(max_shift_x) - shift_x
-    
-    image = tf.image.crop_to_bounding_box(
+    # Pad or crop back to original width with white (255)
+    image = tf.image.resize_with_crop_or_pad(
         image,
-        offset_height=offset_y,
-        offset_width=offset_x,
         target_height=tf.cast(height, tf.int32),
         target_width=tf.cast(width, tf.int32)
     )
